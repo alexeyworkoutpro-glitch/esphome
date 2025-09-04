@@ -89,12 +89,12 @@ DriverChip(
         (0x30, 0x06),
         (0x12, 0x36, 0x2C, 0x2E, 0x3C, 0x38, 0x35, 0x35, 0x32, 0x2E, 0x1D, 0x2B, 0x21, 0x16, 0x29),
         (0x13, 0x36, 0x2C, 0x2E, 0x3C, 0x38, 0x35, 0x35, 0x32, 0x2E, 0x1D, 0x2B, 0x21, 0x16, 0x29),
-        # Sleep Out and Display ON with delays
-        ("delay", 120),      # Wait 120ms after Sleep Out
-        (0x11,),             # Sleep Out
-        ("delay", 120),
-        (0x29,),             # Display ON
-        ("delay", 5),
-        (0x35,),             # TE ON / Tearing Effect ON
+        # # Sleep Out and Display ON with delays
+        # ("delay", 120),      # Wait 120ms after Sleep Out
+        # (0x11,),             # Sleep Out
+        # ("delay", 120),
+        # (0x29,),             # Display ON
+        # ("delay", 5),
+        # (0x35,),             # TE ON / Tearing Effect ON
     ],
 )
