@@ -147,7 +147,7 @@ def model_schema(config):
             model.option(CONF_PCLK_FREQUENCY, "40MHz"): cv.All(
                 cv.frequency, cv.Range(min=4e6, max=100e6)
             ),
-            model.option(CONF_LANES, 2): cv.int_range(1, 2),
+            model.option(CONF_LANES, 2): cv.int_,
             model.option(CONF_LANE_BIT_RATE, None): cv.All(
                 cv.bps, cv.Range(min=100e6, max=3200e6)
             ),
