@@ -48,7 +48,7 @@ DriverChip(
     vsync_back_porch=8,
     vsync_pulse_width=10,    # datasheet suggestie
     vsync_front_porch=40,
-    pclk_frequency=20_000_000,   # Veilig voor ESP32-P4
+    pclk_frequency=52_000_000,   # Veilig voor ESP32-P4
     lane_bit_rate=416_000_000,   # 4 lanes, 540 Mbps per lane
     swap_xy=False,
     color_order="RGB",           # RGB zoals datasheet
