@@ -1,0 +1,161 @@
+substitutions:
+  device_name: "esp32p4tablet"
+  friendly_name: "ESP32 P4 tablet"
+  comment: "esp32-P4"
+  api_password:  !secret display_api # geheim
+  ota_password: !secret wifi_password
+  wifi_ssid: !secret wifi_ssid
+  wifi_password: !secret wifi_password
+
+
+esp32:
+  variant: esp32p4
+  framework:
+    type: esp-idf
+
+esphome:
+  platformio_options:
+    board_build.flash_mode: dio
+    board_build.variant: esp32p4
+    board_build.psram: enabled  # <-- PSRAM inschakelen
+
+  name: ${device_name}
+  comment: ${comment}
+  friendly_name: ${friendly_name}
+  on_boot:
+    then:
+      - delay: 5s
+      - lambda: |-
+          auto label = lv_label_create(lv_scr_act());
+          lv_label_set_text(label, "Hallo ESPHome!");
+          lv_obj_align(label, LV_ALIGN_CENTER, 0, 0);
+
+# LDO nodig voor MIPI-DSI
+esp_ldo:
+  - id: ldo1
+    channel: 3
+    voltage: 2.5   # 3.3V voeding voor MIPI-DSI
+    #enabled: true
+
+api:
+  encryption:
+    key: ${api_password}
+
+ota:
+  - platform: esphome
+    id: my_ota
+    password: ${ota_password}
+
+      
+wifi:
+  networks:
+    - ssid: ${wifi_ssid}
+      password: ${wifi_password}
+
+
+
+    #use_address: 192.168.2.235 #when changing fixed IP
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: ${device_name}
+    password: ${wifi_password}
+
+psram:
+
+
+esp32_hosted:
+  variant: ESP32C6
+  reset_pin: GPIO54
+  cmd_pin: GPIO19
+  clk_pin: GPIO18
+  d0_pin: GPIO14
+  d1_pin: GPIO15
+  d2_pin: GPIO16
+  d3_pin: GPIO17
+  active_high: true
+
+logger:
+    baud_rate: 115200
+    logs:
+        display: ERROR
+        sensor: ERROR
+        cover: ERROR
+        switch: ERROR
+        wifi: ERROR
+        light: ERROR
+        pulse_counter: ERROR
+        remote_receiver: DEBUG
+        binary_sensor: WARN
+        on sensor: ERROR
+        tsl2591: WARN
+
+# -------------------------------
+# Fonts
+# -------------------------------
+font:
+  - file: "gfonts://Roboto"
+    id: font1
+    size: 20
+
+# -------------------------------
+# LVGL Display
+# -------------------------------
+display:
+  - platform: mipi_dsi
+    model: JC8012P4A1
+    id: my_display
+    update_interval: 1s
+
+
+lvgl:
+  buffer_size: 0.25   # 1280*800*2 bytes
+  color_depth: 16
+  update_interval: 10ms
+  page_wrap: True
+
+
+
+
+# -------------------------------
+# Touchscreen (I2C) placeholder
+# -------------------------------
+i2c:
+  sda: GPIO21   # pas aan volgens schema
+  scl: GPIO22   # pas aan volgens schema
+  scan: true
+
+# touchscreen:
+#   - platform: ft5x06   # of andere controller zoals GT911
+#     id: ts1
+#     i2c_id: i2c0
+#     update_interval: 50ms
+#     width: 800
+#     height: 1280
+#     on_touch:
+#       then:
+#         - logger.log: "Screen touched!"
+
+# -------------------------------
+# Backlight control
+# -------------------------------
+output:
+  - platform: gpio
+    id: backlight
+    pin: GPIO23   # pas aan volgens jouw board
+    inverted: false
+
+switch:
+  - platform: output
+    name: "Backlight"
+    output: backlight
+    restore_mode: ALWAYS_ON
+
+# -------------------------------
+# GUI: tekst en knoppen via LVGL
+# -------------------------------
+text_sensor:
+  - platform: template
+    name: "Display Message"
+    lambda: |-
+      return {"JC8012P4A1 gestart!"};

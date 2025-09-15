@@ -77,8 +77,9 @@ void MIPI_DSI::setup() {
     this->reset_pin_->digital_write(true);
     delay(5);
     this->reset_pin_->digital_write(false);
-    delay(5);
+    delay(10);
     this->reset_pin_->digital_write(true);
+    delay(120);
   } else {
     esp_lcd_panel_io_tx_param(this->io_handle_, SW_RESET_CMD, nullptr, 0);
   }
