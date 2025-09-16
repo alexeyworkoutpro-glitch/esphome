@@ -2,7 +2,7 @@ substitutions:
   device_name: "esp32p4tablet"
   friendly_name: "ESP32 P4 tablet"
   comment: "esp32-P4"
-  api_password:  !secret display_api # geheim
+  api_password:  !secret display_api
   ota_password: !secret wifi_password
   wifi_ssid: !secret wifi_ssid
   wifi_password: !secret wifi_password
@@ -36,8 +36,6 @@ esp32:
   flash_size: 16MB
   framework:
     type: esp-idf
-    #version: 5.4.2
-    #platform_version: 54.03.21
     advanced:
       enable_idf_experimental_features: yes
 
@@ -97,7 +95,6 @@ display:
   - platform: mipi_dsi
     model: JC8012P4A1
     id: my_display
-    driver: ng
     update_interval: 1s
     reset_pin: GPIO27
 
@@ -114,10 +111,7 @@ lvgl:
   byte_order: little_endian   
   touchscreens:
     - touchscreen_id: touchscreen_
-  # widgets:
-  #   - label:
-  #       align: CENTER
-  #       text: 'Hello World!'
+
 
 touchscreen:
   - platform: gsl3680
@@ -125,5 +119,5 @@ touchscreen:
     reset_pin: GPIO22
     interrupt_pin: GPIO21
     transform:
-      swap_xy: true
-      mirror_y: true
+      swap_xy: false
+      mirror_y: false
