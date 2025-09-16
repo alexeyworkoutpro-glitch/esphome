@@ -8,34 +8,10 @@ substitutions:
   wifi_password: !secret wifi_password
 
 
-esp32:
-  variant: esp32p4
-  framework:
-    type: esp-idf
-
 esphome:
-  platformio_options:
-    board_build.flash_mode: dio
-    board_build.variant: esp32p4
-    board_build.psram: enabled  # <-- PSRAM inschakelen
-
   name: ${device_name}
   comment: ${comment}
   friendly_name: ${friendly_name}
-  on_boot:
-    then:
-      - delay: 5s
-      - lambda: |-
-          auto label = lv_label_create(lv_scr_act());
-          lv_label_set_text(label, "Hallo ESPHome!");
-          lv_obj_align(label, LV_ALIGN_CENTER, 0, 0);
-
-# LDO nodig voor MIPI-DSI
-esp_ldo:
-  - id: ldo1
-    channel: 3
-    voltage: 2.5   # 3.3V voeding voor MIPI-DSI
-    #enabled: true
 
 api:
   encryption:
@@ -46,57 +22,73 @@ ota:
     id: my_ota
     password: ${ota_password}
 
-      
 wifi:
   networks:
     - ssid: ${wifi_ssid}
       password: ${wifi_password}
-
-
-
-    #use_address: 192.168.2.235 #when changing fixed IP
-
-  # Enable fallback hotspot (captive portal) in case wifi connection fails
   ap:
     ssid: ${device_name}
     password: ${wifi_password}
 
-psram:
+esp32:
+  board: esp32-p4-evboard
+  cpu_frequency: 400MHz
+  flash_size: 16MB
+  framework:
+    type: esp-idf
+    #version: 5.4.2
+    #platform_version: 54.03.21
+    advanced:
+      enable_idf_experimental_features: yes
 
+
+logger:
+  hardware_uart: USB_SERIAL_JTAG
+  level: DEBUG
+  logs:
+    lvgl: INFO
+    display: INFO
+    app: DEBUG
+
+external_components:  
+  - source: github://willumpie82/esphome@dev
+    components: [mipi_dsi]
+  - source: github://kvj/esphome@jd9365_gsl3680
+    refresh: 0s
+    components: [gsl3680]
+  - source: github://esphome/esphome@2025.7.1
+    components: [i2c]
+
+esp_ldo:
+  - channel: 3
+    voltage: 2.5V
 
 esp32_hosted:
   variant: ESP32C6
-  reset_pin: GPIO54
-  cmd_pin: GPIO19
-  clk_pin: GPIO18
-  d0_pin: GPIO14
-  d1_pin: GPIO15
-  d2_pin: GPIO16
-  d3_pin: GPIO17
+  reset_pin: 54
+  cmd_pin: 19
+  clk_pin: 18
+  d0_pin: 14
+  d1_pin: 15
+  d2_pin: 16
+  d3_pin: 17
   active_high: true
 
-logger:
-    baud_rate: 115200
-    logs:
-        display: ERROR
-        sensor: ERROR
-        cover: ERROR
-        switch: ERROR
-        wifi: ERROR
-        light: ERROR
-        pulse_counter: ERROR
-        remote_receiver: DEBUG
-        binary_sensor: WARN
-        on sensor: ERROR
-        tsl2591: WARN
+psram:
+  speed: 200MHz
 
-# -------------------------------
-# Fonts
-# -------------------------------
-font:
-  - file: "gfonts://Roboto"
-    id: font1
-    size: 20
+switch:
+  - id: backlight_
+    platform: gpio
+    pin: GPIO23
+    restore_mode: ALWAYS_ON
+
+  
+color:
+  - id: my_red
+    red: 100%
+    green: 0%
+    blue: 0%
 
 # -------------------------------
 # LVGL Display
@@ -105,57 +97,33 @@ display:
   - platform: mipi_dsi
     model: JC8012P4A1
     id: my_display
+    driver: ng
     update_interval: 1s
+    reset_pin: GPIO27
 
 
-lvgl:
-  buffer_size: 0.25   # 1280*800*2 bytes
-  color_depth: 16
-  update_interval: 10ms
-  page_wrap: True
-
-
-
-
-# -------------------------------
-# Touchscreen (I2C) placeholder
-# -------------------------------
 i2c:
-  sda: GPIO21   # pas aan volgens schema
-  scl: GPIO22   # pas aan volgens schema
-  scan: true
+  - id: i2c_bus
+    sda: GPIO7  
+    scl: GPIO8  
+    #scan: true
+    frequency: 400kHz 
+ 
+lvgl:
+  buffer_size: 100%
+  byte_order: little_endian   
+  touchscreens:
+    - touchscreen_id: touchscreen_
+  # widgets:
+  #   - label:
+  #       align: CENTER
+  #       text: 'Hello World!'
 
-# touchscreen:
-#   - platform: ft5x06   # of andere controller zoals GT911
-#     id: ts1
-#     i2c_id: i2c0
-#     update_interval: 50ms
-#     width: 800
-#     height: 1280
-#     on_touch:
-#       then:
-#         - logger.log: "Screen touched!"
-
-# -------------------------------
-# Backlight control
-# -------------------------------
-output:
-  - platform: gpio
-    id: backlight
-    pin: GPIO23   # pas aan volgens jouw board
-    inverted: false
-
-switch:
-  - platform: output
-    name: "Backlight"
-    output: backlight
-    restore_mode: ALWAYS_ON
-
-# -------------------------------
-# GUI: tekst en knoppen via LVGL
-# -------------------------------
-text_sensor:
-  - platform: template
-    name: "Display Message"
-    lambda: |-
-      return {"JC8012P4A1 gestart!"};
+touchscreen:
+  - platform: gsl3680
+    id: touchscreen_
+    reset_pin: GPIO22
+    interrupt_pin: GPIO21
+    transform:
+      swap_xy: true
+      mirror_y: true
