@@ -1,5 +1,9 @@
 esphome:
   name: esp32p4
+  on_boot:
+    priority: 500
+    then:
+      - script.execute: blink_ip
 
 esp32:
   variant: esp32p4
@@ -10,20 +14,6 @@ esp32:
 
 logger:
   level: DEBUG
-
-psram:
-  speed: 200MHz
-
-esp_ldo:
-  - channel: 3
-    voltage: 2.5V
-
-external_components:
-  - source: github://willumpie82/esphome@50e9e836afc937330db95f8fc10698999480e510
-    components: [mipi_dsi]
-  - source: github://kvj/esphome@jd9365_gsl3680
-    refresh: 0s
-    components: [gsl3680]
 
 esp32_hosted:
   variant: ESP32C6
@@ -40,37 +30,6 @@ wifi:
   ssid: "MTS_GPON_ab2b70"
   password: "Gbi393a3"
 
-web_server:
-  port: 80
-
-api:
-
-display:
-  - platform: mipi_dsi
-    model: JC8012P4A1
-    id: my_display
-    reset_pin: GPIO27
-    rotation: 180
-    dimensions:
-      width: 800
-      height: 1280
-
-i2c:
-  - id: i2c_bus
-    sda: GPIO7
-    scl: GPIO8
-    scan: true
-
-touchscreen:
-  - platform: gsl3680
-    id: touchscreen_
-    reset_pin: GPIO22
-    interrupt_pin: GPIO21
-    transform:
-      swap_xy: false
-      mirror_x: false
-      mirror_y: true
-
 output:
   - platform: ledc
     pin: GPIO23
@@ -80,4 +39,54 @@ light:
   - platform: monochromatic
     output: backlight_pwm
     name: Backlight
-    restore_mode: ALWAYS_ON
+    id: backlight
+
+script:
+  - id: blink_digit
+    parameters:
+      digit: int
+    then:
+      - if:
+          condition:
+            lambda: 'return digit == 0;'
+          then:
+            - light.turn_on:
+                id: backlight
+                brightness: 100%
+            - delay: 1.5s
+            - light.turn_off: backlight
+            - delay: 0.5s
+      - else:
+          - repeat:
+              count: !lambda 'return digit;'
+              then:
+                - light.turn_on:
+                    id: backlight
+                    brightness: 100%
+                - delay: 0.5s
+                - light.turn_off: backlight
+                - delay: 0.3s
+          - delay: 0.5s
+
+  - id: blink_ip
+    then:
+      - wait_until:
+          wifi.connected:
+      - light.turn_on:
+          id: backlight
+          brightness: 100%
+      - delay: 3s
+      - light.turn_off: backlight
+      - delay: 1s
+      - lambda: |-
+          std::string ip = id(wifi_ap).get_ip_address().str();
+          for (char c : ip) {
+            if (c >= '0' && c <= '9') {
+              id(blink_digit).execute(c - '0');
+            } else {
+              delay(500);
+            }
+          }
+      - light.turn_on:
+          id: backlight
+          brightness: 100%
