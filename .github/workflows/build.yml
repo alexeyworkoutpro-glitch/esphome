@@ -10,16 +10,25 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+
       - name: Install ESPHome
         run: pip install esphome==2025.12.0
+
       - name: Compile firmware
         run: esphome compile esp32-p4.yaml
+
+      - name: Copy firmware
+        run: |
+          mkdir -p output
+          cp .esphome/build/esp32p4/.pioenvs/esp32p4/firmware.factory.bin output/
+
       - name: Upload firmware
         uses: actions/upload-artifact@v4
         with:
           name: firmware
-          path: .esphome/build/**/.pioenvs/**/firmware.factory.bin
+          path: output/
