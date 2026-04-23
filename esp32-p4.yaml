@@ -8,69 +8,20 @@ esp32:
     advanced:
       enable_idf_experimental_features: true
 
+# Используем только UART-логгер, он надежнее
 logger:
-  hardware_uart: USB_SERIAL_JTAG
   level: DEBUG
 
-psram:
-  speed: 200MHz
-
-esp_ldo:
-  - channel: 3
-    voltage: 2.5V
-
-external_components:
-  - source: github://willumpie82/esphome@50e9e836afc937330db95f8fc10698999480e510
-    components: [mipi_dsi]
-  - source: github://kvj/esphome@jd9365_gsl3680
-    refresh: 0s
-    components: [gsl3680]
-
-esp32_hosted:
-  variant: ESP32C6
-  reset_pin: GPIO54
-  cmd_pin: GPIO19
-  clk_pin: GPIO18
-  d0_pin: GPIO14
-  d1_pin: GPIO15
-  d2_pin: GPIO16
-  d3_pin: GPIO17
-  active_high: true
-
+# Включаем Wi-Fi
 wifi:
   ssid: "MTS_GPON_ab2b70"
   password: "Gbi393a3"
 
-captive_portal:
+# Включаем web-сервер
+web_server:
+  port: 80
 
-api:
-
-display:
-  - platform: mipi_dsi
-    model: JC8012P4A1
-    id: my_display
-    reset_pin: GPIO27
-    rotation: 180
-    dimensions:
-      width: 800
-      height: 1280
-
-i2c:
-  - id: i2c_bus
-    sda: GPIO7
-    scl: GPIO8
-    scan: true
-
-touchscreen:
-  - platform: gsl3680
-    id: touchscreen_
-    reset_pin: GPIO22
-    interrupt_pin: GPIO21
-    transform:
-      swap_xy: false
-      mirror_x: false
-      mirror_y: true
-
+# Мигаем подсветкой, чтобы подать знак
 output:
   - platform: ledc
     pin: GPIO23
