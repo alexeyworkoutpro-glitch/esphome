@@ -28,10 +28,14 @@ external_components:
 
 esp32_hosted:
   variant: ESP32C6
-  tx_pin: GPIO43
-  rx_pin: GPIO44
-  active_high: false
   reset_pin: GPIO54
+  cmd_pin: GPIO19
+  clk_pin: GPIO18
+  d0_pin: GPIO14
+  d1_pin: GPIO15
+  d2_pin: GPIO16
+  d3_pin: GPIO17
+  active_high: true4
 
 wifi:
   ssid: "MTS_GPON_ab2b70"
