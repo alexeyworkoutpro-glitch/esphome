@@ -81,3 +81,4 @@ light:
     output: backlight_pwm
     name: Backlight
     restore_mode: ALWAYS_ON
+
